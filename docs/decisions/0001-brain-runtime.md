@@ -1,7 +1,7 @@
 # 0001 — How the brain talks to the model
 
 Date: 2026-11-16
-Status: decided for Phase 0; numbers still to be measured
+Status: decided for Phase 0; measured 2026-11-17, budget not met (see Measured)
 
 ## Decision
 
@@ -30,7 +30,7 @@ measurement that matters is whether the direct call meets the budget.
 - No automatic fallback model when a request is declined. Jarvis says he
   cannot help with that request. Server-side fallbacks can be added later.
 
-## Still to measure
+## How to measure
 
 Run, after `uv run jarvis setup`:
 
@@ -47,8 +47,33 @@ Budget: first full sentence within 1.0 s (median). Then apply:
 
 ## Measured
 
+2026-11-17, owner's Mac, 20 runs each, time to the first full sentence.
+
 | Option | Median | p90 |
 |---|---|---|
-| sonnet-5-5, low effort | not yet run | |
-| sonnet-5-5, low effort, thinking only between tools | not yet run | |
-| haiku-5-5, low effort | not yet run | |
+| sonnet-5-5, low effort | 2.13 s | 5.83 s |
+| sonnet-5-5, low effort, thinking only between tools | 2.11 s | 5.24 s |
+| haiku-5-5, low effort | 1.16 s | 1.31 s |
+
+## Outcome
+
+No option meets the 1.0 s budget, so the last row of the table applies:
+rethink before Phase 1 code.
+
+- Sonnet is about twice the budget and uneven (p90 over 5 s). It cannot be
+  the voice of a 2-second assistant as configured.
+- Turning thinking off between tools changes nothing, so thinking is not
+  the cause.
+- Haiku misses by 0.16 s and is steady (p90 1.31 s). With STT 0.7 s and TTS
+  0.3 s that is about 2.2 s end to end against a goal of about 2 s.
+
+Not decided yet; the owner chooses. Options for the Phase 1 plan:
+
+1. Haiku for spoken turns (`fast_model = "claude-haiku-5-5"`), Sonnet or
+   Opus only when a turn needs depth. Closest to the goal today.
+2. Prompt caching for the system prompt (personality, profile, lessons),
+   then measure again; it may bring either model down.
+3. A short spoken acknowledgement while the answer forms, so a slower
+   model still feels immediate.
+
+The default in code is unchanged (`claude-sonnet-5-5`).

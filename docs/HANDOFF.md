@@ -48,7 +48,9 @@ when Phase 0 was built:
 
 - No call has ever been made to the live Anthropic API. `AnthropicModel` is
   tested against fakes and against an unreachable server only.
-- The latency probe has not been run, so the 2-second goal is unmeasured.
+- The latency probe has been run once (2026-11-17) and no option met the
+  1.0 s budget: Sonnet 2.13 s median, Haiku 1.16 s. See "Outcome" in
+  `docs/decisions/0001-brain-runtime.md`. The 2-second goal is not met yet.
 - I have not done the Phase 0 acceptance check.
 
 Small known issues left from the Phase 0 review, not yet fixed. Fix them
@@ -78,9 +80,11 @@ test-first at the start of Phase 1, or tell me why one should wait:
    through the seven acceptance steps in Task 9, Step 7 of
    `docs/superpowers/plans/2026-11-16-jarvis-phase-0-foundations.md`.
    Fix anything that fails, test first.
-2. Run `uv run python scripts/latency_probe.py` (it makes real, billed
-   calls; tell me first). Fill in the "Measured" table in
-   `docs/decisions/0001-brain-runtime.md` and apply its decision table.
+2. Read the "Outcome" section of `docs/decisions/0001-brain-runtime.md`.
+   The latency budget was missed. Ask me which of its three options I want
+   (or a mix), put the choice in the Phase 1 plan, and measure again with
+   `uv run python scripts/latency_probe.py` (real, billed calls; tell me
+   first) after any change that should affect speed.
 3. If Phase 0 is not merged yet, ask me whether to merge
    `feat/phase-0-foundations` into `main` or open a pull request. Do not
    push or merge without my yes.
