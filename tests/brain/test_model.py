@@ -125,3 +125,73 @@ async def test_anthropic_model_does_not_run_truncated_tool_calls(monkeypatch):
     patch_stream(monkeypatch, model, [], final)
     events = await collect(model.stream(system="s", messages=[], tools=[], model="m"))
     assert events == [Done("max_tokens")]
+
+
+class BreakingStream(FakeStream):
+    def __init__(self, events, error):
+        super().__init__(events, None)
+        self._error = error
+
+    def __aiter__(self):
+        async def gen():
+            for e in self._events:
+                yield e
+            raise self._error
+        return gen()
+
+
+@pytest.mark.parametrize("error", [
+    httpx2.ReadError("connection dropped"),
+    anthropic.APIResponseValidationError(
+        response=httpx2.Response(200, request=httpx2.Request("POST", "https://x")), body=None),
+])
+async def test_failure_in_the_middle_of_a_stream_becomes_model_unavailable(monkeypatch, error):
+    model = AnthropicModel(api_key="k")
+    monkeypatch.setattr(model._client.messages, "stream",
+                        lambda **kw: BreakingStream([ns(type="text", text="Hal")], error))
+    seen = []
+    with pytest.raises(ModelUnavailable):
+        async for e in model.stream(system="s", messages=[], tools=[], model="m"):
+            seen.append(e)
+    assert seen == [TextDelta("Hal")]
+
+
+def _status_error(cls, code):
+    request = httpx2.Request("POST", "https://api.anthropic.com/v1/messages")
+    return cls("nope", response=httpx2.Response(code, request=request), body=None)
+
+
+async def test_rejected_key_tells_the_owner_to_run_setup(monkeypatch):
+    model = AnthropicModel(api_key="k")
+
+    def boom(**kw):
+        raise _status_error(anthropic.AuthenticationError, 401)
+
+    monkeypatch.setattr(model._client.messages, "stream", boom)
+    with pytest.raises(ModelUnavailable) as caught:
+        await collect(model.stream(system="s", messages=[], tools=[], model="m"))
+    assert caught.value.user_message == "My API key was rejected. Run: jarvis setup"
+
+
+async def test_rejected_request_says_so(monkeypatch):
+    model = AnthropicModel(api_key="k")
+
+    def boom(**kw):
+        raise _status_error(anthropic.BadRequestError, 400)
+
+    monkeypatch.setattr(model._client.messages, "stream", boom)
+    with pytest.raises(ModelUnavailable) as caught:
+        await collect(model.stream(system="s", messages=[], tools=[], model="m"))
+    assert "rejected that request" in caught.value.user_message
+
+
+async def test_transient_failure_has_no_special_message(monkeypatch):
+    model = AnthropicModel(api_key="k")
+
+    def boom(**kw):
+        raise _status_error(anthropic.InternalServerError, 500)
+
+    monkeypatch.setattr(model._client.messages, "stream", boom)
+    with pytest.raises(ModelUnavailable) as caught:
+        await collect(model.stream(system="s", messages=[], tools=[], model="m"))
+    assert caught.value.user_message is None

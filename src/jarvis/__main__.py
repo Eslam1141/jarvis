@@ -93,8 +93,11 @@ def build_brain(key: str) -> Brain:
 
 async def _reply(brain: Brain, text: str) -> None:
     print("jarvis> ", end="", flush=True)
-    async for chunk in brain.respond(text):
-        print(chunk, end="", flush=True)
+    try:
+        async for chunk in brain.respond(text):
+            print(chunk, end="", flush=True)
+    except Exception as e:  # never let one bad turn end the conversation
+        print(f"Something went wrong ({type(e).__name__}). Try again.", end="")
     print()
 
 

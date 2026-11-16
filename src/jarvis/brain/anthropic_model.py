@@ -3,6 +3,7 @@
 from collections.abc import AsyncIterator
 
 import anthropic
+import httpx2
 
 from jarvis.brain.model import (
     Done,
@@ -15,6 +16,11 @@ from jarvis.brain.model import (
 )
 
 MAX_TOKENS = 16000
+MSG_BAD_KEY = "My API key was rejected. Run: jarvis setup"
+MSG_BAD_REQUEST = (
+    "The model rejected that request. If this keeps happening, tell me to "
+    "start a fresh conversation."
+)
 
 
 class AnthropicModel:
@@ -46,9 +52,13 @@ class AnthropicModel:
                     if event.type == "text":
                         yield TextDelta(event.text)
                 final = await stream.get_final_message()
-        except anthropic.AuthenticationError as e:
-            raise ModelUnavailable("The API key was rejected. Run: jarvis setup") from e
-        except (anthropic.APIConnectionError, anthropic.APIStatusError) as e:
+        except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
+            raise ModelUnavailable(str(e), MSG_BAD_KEY) from e
+        except anthropic.BadRequestError as e:
+            raise ModelUnavailable(str(e), MSG_BAD_REQUEST) from e
+        except (anthropic.APIError, httpx2.TransportError) as e:
+            # Includes connections that drop in the middle of a reply, which
+            # surface as raw transport errors rather than SDK errors.
             raise ModelUnavailable(str(e)) from e
 
         # A reply cut off by the token limit can carry a half-written tool

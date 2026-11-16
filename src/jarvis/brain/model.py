@@ -42,7 +42,15 @@ ModelEvent = TextDelta | ToolCall | Done
 
 
 class ModelUnavailable(Exception):
-    """The model could not be reached or could not answer right now."""
+    """The model could not be reached or could not answer right now.
+
+    `user_message` is what to tell the owner when the cause is specific
+    (a rejected key, a rejected request). None means "try again shortly".
+    """
+
+    def __init__(self, detail: str = "", user_message: str | None = None):
+        super().__init__(detail)
+        self.user_message = user_message
 
 
 class ModelClient(Protocol):

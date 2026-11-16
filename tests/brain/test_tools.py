@@ -96,3 +96,17 @@ async def test_unknown_tool(registry, gate):
 def test_specs_list_registered_tools(registry):
     registry.register(Tool("look", "Look at it", {"type": "object"}, returns(""), writes=False))
     assert registry.specs() == [ToolSpec("look", "Look at it", {"type": "object"})]
+
+
+async def test_action_that_ran_but_could_not_be_logged_is_still_reported_as_done(registry, store):
+    ran = []
+    registry.register(write_tool("send", ran))
+    g = Gate(replies("yes"), store, lambda: NOW)
+
+    def broken_record(*a):
+        raise RuntimeError("database is locked")
+
+    g.record = broken_record
+    out = await registry.run("send", {"to": "Ali"}, TurnState(), g)
+    assert ran == [{"to": "Ali"}]
+    assert out.startswith("sent") and "not be logged" in out and not out.startswith("error")

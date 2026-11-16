@@ -139,3 +139,26 @@ def test_ctrl_c_during_a_reply_returns_to_the_prompt(memory_keyring, tmp_home, m
     assert main(["chat"]) == 0
     out = capsys.readouterr().out
     assert "(stopped)" in out and "jarvis> ok" in out
+
+
+class CrashingModel:
+    def __init__(self):
+        self.calls = 0
+
+    async def stream(self, *, system, messages, tools, model):
+        self.calls += 1
+        if self.calls == 1:
+            raise RuntimeError("something unexpected")
+        yield TextDelta("Fine.")
+        yield Done("end_turn")
+
+
+def test_an_unexpected_error_does_not_end_the_chat(memory_keyring, tmp_home, monkeypatch, capsys):
+    set_secret(ANTHROPIC_KEY, "k")
+    model = CrashingModel()
+    monkeypatch.setattr("jarvis.__main__.make_model", lambda key: model)
+    feed_input(monkeypatch, ["one", "two", "exit"])
+    assert main(["chat"]) == 0
+    out = capsys.readouterr().out
+    assert "Something went wrong" in out and "jarvis> Fine." in out
+    assert "Traceback" not in out

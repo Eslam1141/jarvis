@@ -62,7 +62,11 @@ class ToolRegistry:
                 if not await gate.approve(name, description, detail):
                     return "declined by owner"
                 result = await tool.handler(args, state)
-                gate.record(name, description, detail)
+                try:
+                    gate.record(name, description, detail)
+                except Exception:
+                    # It happened. Saying "error" would invite doing it twice.
+                    result += " (done, but it could not be logged)"
             else:
                 result = await tool.handler(args, state)
         except Exception as e:

@@ -45,3 +45,28 @@ async def test_approve_does_not_log_but_record_does(store):
     g.record("k", "d", "{}")
     a = store.actions(10)[0]
     assert (a.kind, a.summary, a.detail, a.at) == ("k", "d", "{}", NOW)
+
+
+@pytest.mark.parametrize("reply", [
+    "not ok", "I am not okay with that", "isn't ok", "ok dont", "dont send it",
+    "can't confirm", "I would not say yes", "ok not now", "nah ok", "never, okay?",
+    "مش تمام", "مش ماشي", "مش عايز ابعته", "ماتبعتش", "won't do it",
+])
+def test_negated_replies_are_no(reply):
+    assert parse_decision(reply) == "no"
+
+
+@pytest.mark.parametrize("reply", [
+    "who said yes", "yes but change the subject first", "ok and add Sara in copy",
+    "is it okay?", "تمام بس غير العنوان", "send it to Omar instead",
+])
+def test_yes_word_inside_a_longer_reply_is_not_a_yes(reply):
+    assert parse_decision(reply) != "yes"
+
+
+@pytest.mark.parametrize("reply", [
+    "Yes please", "yes, go ahead", "ok jarvis", "Okay, send it. Thanks!",
+    "أيوه يا جارفيس ابعته", "تمام ابعت", "sure, do it",
+])
+def test_plain_yes_with_politeness_is_yes(reply):
+    assert parse_decision(reply) == "yes"

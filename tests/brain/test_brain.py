@@ -126,3 +126,8 @@ async def test_uses_fast_model_and_offers_tools(make_brain):
     assert call["model"] == "claude-sonnet-5-5"
     assert {t.name for t in call["tools"]} == {
         "remember_fact", "remember_lesson", "list_lessons", "forget_lesson"}
+
+
+async def test_a_specific_failure_reason_reaches_the_owner(make_brain):
+    b = make_brain([[ModelUnavailable("401", user_message="My API key was rejected. Run: jarvis setup")]])
+    assert await say(b, "hi") == ["My API key was rejected. Run: jarvis setup"]

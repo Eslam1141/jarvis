@@ -122,10 +122,10 @@ class Brain:
             else:
                 said += MSG_TOO_MANY_STEPS
                 yield MSG_TOO_MANY_STEPS
-        except ModelUnavailable:
+        except ModelUnavailable as e:
             if said:
                 self._store.add_turn("jarvis", said.rstrip() + CUT_OFF, self._clock())
-            yield MSG_UNAVAILABLE
+            yield e.user_message or MSG_UNAVAILABLE
             return
 
         if said:
