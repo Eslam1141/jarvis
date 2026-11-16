@@ -41,3 +41,21 @@ def tmp_home(tmp_path, monkeypatch):
     monkeypatch.delenv("JARVIS_HOME", raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))
     return tmp_path
+
+
+def replies(*answers, record=None):
+    """An async `ask` that returns the given answers in order."""
+    queue = list(answers)
+
+    async def ask(question: str) -> str:
+        if record is not None:
+            record.append(question)
+        return queue.pop(0)
+
+    return ask
+
+
+@pytest.fixture
+def store(tmp_path):
+    from jarvis.memory.store import Store
+    return Store(tmp_path / "j.db")
