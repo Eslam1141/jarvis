@@ -10,7 +10,7 @@ from jarvis.paths import data_dir
 @dataclass(frozen=True)
 class Config:
     owner_name: str = "Sir"
-    fast_model: str = "claude-sonnet-5-5"
+    fast_model: str = "claude-haiku-5-5"
     deep_model: str = "claude-opus-5-5"
     history_turns: int = 20
 

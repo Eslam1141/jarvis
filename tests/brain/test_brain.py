@@ -123,7 +123,7 @@ async def test_uses_fast_model_and_offers_tools(make_brain):
     b = make_brain([[TextDelta("ok"), Done("end_turn")]])
     await say(b, "hi")
     call = b.model.calls[0]
-    assert call["model"] == "claude-sonnet-5-5"
+    assert call["model"] == "claude-haiku-5-5"
     assert {t.name for t in call["tools"]} == {
         "remember_fact", "remember_lesson", "list_lessons", "forget_lesson"}
 

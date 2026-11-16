@@ -1,7 +1,7 @@
 # 0001 — How the brain talks to the model
 
 Date: 2026-11-16
-Status: decided for Phase 0; measured 2026-11-17, budget not met (see Measured)
+Status: decided for Phase 0; measured 2026-11-17, budget not met, switched to Haiku (see Outcome)
 
 ## Decision
 
@@ -22,7 +22,8 @@ measurement that matters is whether the direct call meets the budget.
 
 ## Settings chosen
 
-- Fast model `claude-sonnet-5-5` at effort `low` for conversation.
+- Fast model `claude-haiku-5-5` at effort `low` for conversation (was
+  `claude-sonnet-5-5` until the measurement below).
 - Deep model `claude-opus-5-5` for idea workshops and channel analysis
   (the plan said `claude-fable-5-2`; Opus 5.5 is the standard default, costs
   half as much, and has no data-retention precondition. Change `deep_model`
@@ -67,7 +68,7 @@ rethink before Phase 1 code.
 - Haiku misses by 0.16 s and is steady (p90 1.31 s). With STT 0.7 s and TTS
   0.3 s that is about 2.2 s end to end against a goal of about 2 s.
 
-Not decided yet; the owner chooses. Options for the Phase 1 plan:
+Options considered:
 
 1. Haiku for spoken turns (`fast_model = "claude-haiku-5-5"`), Sonnet or
    Opus only when a turn needs depth. Closest to the goal today.
@@ -76,4 +77,7 @@ Not decided yet; the owner chooses. Options for the Phase 1 plan:
 3. A short spoken acknowledgement while the answer forms, so a slower
    model still feels immediate.
 
-The default in code is unchanged (`claude-sonnet-5-5`).
+Decided 2026-11-17 by the owner: option 1. `fast_model` now defaults to
+`claude-haiku-5-5`. It still misses the budget by 0.16 s, so options 2 and 3
+stay open for the Phase 1 plan, as does routing a turn that needs depth to
+a stronger model (not built yet: every live turn uses `fast_model`).

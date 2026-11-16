@@ -81,8 +81,10 @@ test-first at the start of Phase 1, or tell me why one should wait:
    `docs/superpowers/plans/2026-11-16-jarvis-phase-0-foundations.md`.
    Fix anything that fails, test first.
 2. Read the "Outcome" section of `docs/decisions/0001-brain-runtime.md`.
-   The latency budget was missed. Ask me which of its three options I want
-   (or a mix), put the choice in the Phase 1 plan, and measure again with
+   The latency budget was missed. I chose Haiku for conversation (about
+   2.2 s end to end, still a little over). In the Phase 1 plan, cover
+   prompt caching and a spoken acknowledgement to close the gap, and how a
+   turn that needs depth reaches a stronger model. Measure again with
    `uv run python scripts/latency_probe.py` (real, billed calls; tell me
    first) after any change that should affect speed.
 3. If Phase 0 is not merged yet, ask me whether to merge
@@ -153,7 +155,8 @@ settings yourself.
 
 ## Model settings (already in the code)
 
-- Conversation: `claude-sonnet-5-5` at low effort (`fast_model`).
+- Conversation: `claude-haiku-5-5` at low effort (`fast_model`). I chose
+  it for speed after the probe; Sonnet was about twice as slow.
 - Long thinking, from Phase 4 on: `claude-opus-5-5` (`deep_model`).
 - There is no automatic fallback model when a request is declined; Jarvis
   says he cannot help with it. Leave that unless I ask.

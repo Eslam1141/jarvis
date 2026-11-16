@@ -49,7 +49,7 @@ Nothing in that folder belongs in this repository, which is public.
 
 ```toml
 owner_name = "Sir"
-fast_model = "claude-sonnet-5-5"   # live conversation
+fast_model = "claude-haiku-5-5"   # live conversation
 deep_model = "claude-opus-5-5"     # long thinking, used from Phase 4 on
 history_turns = 20
 ```
