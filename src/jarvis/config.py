@@ -11,7 +11,7 @@ from jarvis.paths import data_dir
 class Config:
     owner_name: str = "Sir"
     fast_model: str = "claude-sonnet-5-5"
-    deep_model: str = "claude-fable-5-2"
+    deep_model: str = "claude-opus-5-5"
     history_turns: int = 20
 
 

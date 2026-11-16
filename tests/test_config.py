@@ -6,7 +6,7 @@ from jarvis.config import load_config
 def test_defaults_when_file_missing(tmp_path):
     c = load_config(tmp_path / "config.toml")
     assert (c.owner_name, c.fast_model, c.deep_model, c.history_turns) == (
-        "Sir", "claude-sonnet-5-5", "claude-fable-5-2", 20)
+        "Sir", "claude-sonnet-5-5", "claude-opus-5-5", 20)
 
 
 def test_file_overrides_defaults(tmp_path):
