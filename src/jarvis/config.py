@@ -30,3 +30,20 @@ def load_config(path: Path | None = None) -> Config:
         raise ValueError(f"Unknown setting(s) in {path}: {', '.join(unknown)}")
     return Config(**values)
 
+
+
+def save_setting(key: str, value: str | int, path: Path | None = None) -> None:
+    """Set one setting in config.toml, keeping the others."""
+    if key not in {f.name for f in fields(Config)}:
+        raise ValueError(f"Unknown setting: {key}")
+    path = path or config_path()
+    current = tomllib.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    current[key] = value
+    lines = []
+    for name, item in current.items():
+        if isinstance(item, str):
+            escaped = item.replace("\\", "\\\\").replace('"', '\\"')
+            lines.append(f'{name} = "{escaped}"')
+        else:
+            lines.append(f"{name} = {item}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
